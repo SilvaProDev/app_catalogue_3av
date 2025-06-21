@@ -1,0 +1,80 @@
+import '../model/service_model.dart';
+import '../model/user_model.dart';
+
+final List<User> users = [
+  User(
+    id: 1,
+    nom: 'Berthe',
+    prenom: 'Aboubacar',
+    numero: '0707164609',
+    fonction: 'Directeur Général',
+    emploi: 'Administrateur',
+    grade: 'A1',
+    image: 'doctor1.jpg',
+    service: Service(
+      id: 101,
+      libelle: 'Informatique',
+      couleur: '#4CAF50',
+    ),
+  ),
+  User(
+    id: 2,
+    nom: 'Konan',
+    prenom: 'Fulgence',
+    numero: '0141525487',
+    fonction: 'Chef de Service',
+    emploi: 'Développeur',
+    grade: 'B2',
+    image: 'doctor2.jpg',
+    service: Service(
+      id: 101,
+      libelle: 'Développement',
+      couleur: '#4CAF50',
+    ),
+  ),
+  User(
+    id: 3,
+    nom: 'Kouame',
+    prenom: 'Justine',
+    numero: '0152636984',
+    fonction: 'Responsable RH',
+    emploi: 'Chargée RH',
+    grade: 'C1',
+    image: 'doctor3.jpg',
+    service: Service(
+      id: 103,
+      libelle: 'Ressources Humaines',
+      couleur: '#FF9800',
+    ),
+  ),
+  User(
+    id: 4,
+    nom: 'Traoré',
+    prenom: 'Issa',
+    numero: '0569871230',
+    fonction: 'Technicien',
+    emploi: 'Support IT',
+    grade: 'C2',
+    image: 'doctor1.jpg',
+    service: Service(
+      id: 104,
+      libelle: 'Support Technique',
+      couleur: '#9C27B0',
+    ),
+  ),
+  User(
+    id: 5,
+    nom: 'Soro',
+    prenom: 'Fatou',
+    numero: '0587412369',
+    fonction: 'Assistante',
+    emploi: 'Secrétaire',
+    grade: 'B1',
+    image: 'doctor1.jpg',
+    service: Service(
+      id: 105,
+      libelle: 'Administration',
+      couleur: '#F44336',
+    ),
+  ),
+];
