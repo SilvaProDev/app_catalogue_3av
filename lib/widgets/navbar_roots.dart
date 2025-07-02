@@ -68,7 +68,7 @@ class _NavBarRootsState extends State<NavBarRoots> {
             ),
              BottomNavigationBarItem(
               icon: Icon(Icons.work),
-              label: "Service",
+              label: "Répertoire",
             ),
             BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.news),

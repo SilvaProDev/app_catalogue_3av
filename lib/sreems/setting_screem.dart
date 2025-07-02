@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../pages/demande_pret.dart';
 import '../pages/profil_page.dart';
+import '../pages/suivi_de_pret.dart';
 import 'dashbord_screem.dart';
 import 'login_screen.dart';
 import 'messages_screem.dart';
@@ -176,6 +177,19 @@ class SettingsScreen extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                               builder: (context) => LoanListPage()),
+                        );
+                      },
+                    ),
+                    _buildSettingTile(
+                      context,
+                      icon: Icons.timeline,
+                      title: "suivre mon prêt",
+                      color: Colors.indigo,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SuiviPretPage(etapeActuelle: 2,)),
                         );
                       },
                     ),

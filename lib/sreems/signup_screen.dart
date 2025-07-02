@@ -115,36 +115,36 @@ class _SignupScreenState extends State<SignupScreen> {
                               Color(0xFF6B1A6B),
                             ],
                           ),
-                          SizedBox(height: 20),
+                          SizedBox(height: 40),
                           // Row des Checkbox
                           FadeInUp(
                             duration: Duration(milliseconds: 600),
                             delay: Duration(milliseconds: 300),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                _buildCheckbox("3AV", _is3AVChecked, (bool? value) {
-                                  setState(() {
-                                    _is3AVChecked = value ?? false;
-                                  });
-                                }),
-                                _buildCheckbox("MUCAF", _isMUCAFChecked, (bool? value) {
-                                  setState(() {
-                                    _isMUCAFChecked = value ?? false;
-                                  });
-                                }),
-                                _buildCheckbox("AMCOF", _isAMCOFChecked, (bool? value) {
-                                  setState(() {
-                                    _isAMCOFChecked = value ?? false;
-                                  });
-                                }),
-                              ],
+                              // children: [
+                              //   _buildCheckbox("3AV", _is3AVChecked, (bool? value) {
+                              //     setState(() {
+                              //       _is3AVChecked = value ?? false;
+                              //     });
+                              //   }),
+                              //   _buildCheckbox("MUCAF", _isMUCAFChecked, (bool? value) {
+                              //     setState(() {
+                              //       _isMUCAFChecked = value ?? false;
+                              //     });
+                              //   }),
+                              //   _buildCheckbox("AMCOF", _isAMCOFChecked, (bool? value) {
+                              //     setState(() {
+                              //       _isAMCOFChecked = value ?? false;
+                              //     });
+                              //   }),
+                              // ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 40),
                     FadeInUp(
                       duration: Duration(milliseconds: 600),
                       delay: Duration(milliseconds: 400),
@@ -153,7 +153,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         text: 'Créer compte',
                       ),
                     ),
-                    SizedBox(height: 50),
+                    SizedBox(height: 100),
                   ],
                 ),
               ),

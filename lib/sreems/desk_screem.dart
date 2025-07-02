@@ -12,9 +12,9 @@ class OrgChartPage extends StatelessWidget {
     final Graph graph = Graph()..isTree = true;
     final BuchheimWalkerConfiguration builder =
         BuchheimWalkerConfiguration()
-          ..siblingSeparation = 20
-          ..levelSeparation = 70
-          ..subtreeSeparation = 30
+          ..siblingSeparation = 1
+          ..levelSeparation = 40
+          ..subtreeSeparation = 3
           ..orientation = BuchheimWalkerConfiguration.ORIENTATION_TOP_BOTTOM;
 
     // Création des nœuds avec données personnalisées
@@ -51,7 +51,7 @@ class OrgChartPage extends StatelessWidget {
         constrained: false,
         boundaryMargin: const EdgeInsets.all(100),
         minScale: 0.01,
-        maxScale: 5.0,
+        maxScale: 4.0,
         child: GraphView(
           graph: graph,
           algorithm: BuchheimWalkerAlgorithm(
@@ -76,49 +76,49 @@ Widget _buildCustomNode(String id) {
       'position': 'PRESIDENT',
       'email': 'Aboubacar@gmail.com',
       'phone': '0707164609',
-      'image': 'doctor1.jpg',
+      'image': 'doctor5.jpeg',
     },
     'VICE': {
       'name': 'GUILLAUME KOUA',
       'position': 'VICE PRESIDENT',
       'email': 'bob@example.com',
       'phone': '234-567-8901',
-      'image': 'doctor2.jpg',
+      'image': 'doctor5.jpeg',
     },
     'CONSEILLER': {
       'name': 'MEL MELESS DARIUS',
       'position': 'CONSEILLER SOCIALES',
       'email': 'meless@gmail.com',
       'phone': '0778596854',
-      'image': 'doctor3.jpg',
+      'image': 'doctor5.jpeg',
     },
     'SECRETAIRE': {
       'name': 'FULGENCE K KONAN',
       'position': 'SECRETAIRE GENERAL',
       'email': 'konan@gmail.com',
       'phone': '0141525487',
-      'image': 'doctor1.jpg',
+      'image': 'doctor5.jpeg',
     },
     'TRESORIERE': {
       'name': 'KOUAKOU E.A JUSKA',
       'position': 'TRESORIERE GENRALE',
       'email': 'juska@gmail.com',
       'phone': '0152636984',
-      'image': 'doctor2.jpg',
+      'image': 'doctor5.jpeg',
     },
     'SECRETAIRE-ADJOINT': {
       'name': 'KOUASSI E.S VINCENT',
       'position': 'SECRETAIRE GENERAL ADJOINT',
       'email': 'vincent@gmail.com',
       'phone': '0546134587',
-      'image': 'doctor3.jpg',
+      'image': 'doctor5.jpeg',
     },
     'TRESORIERE-ADJOINTE': {
       'name': 'GNEPA EPSE KOUAME',
       'position': 'TRESORIERE GENRALE ADJOINTE',
       'email': 'juska@gmail.com',
       'phone': '0506010204',
-      'image': 'doctor1.jpg',
+      'image': 'doctor5.jpeg',
     },
   };
 

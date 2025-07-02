@@ -35,7 +35,7 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white,),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.push(
               context,
@@ -47,8 +47,10 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
         title: Text('Mes Emprunts', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.deepPurple,
         actions: [
-          IconButton(icon: Icon(Icons.add, color: Colors.white,),
-           onPressed: _showLoanFormModal),
+          IconButton(
+            icon: Icon(Icons.add, color: Colors.white),
+            onPressed: _showLoanFormModal,
+          ),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -370,9 +372,33 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
   void _showLoanFormModal() {
     final maxLoanAmount = 1000000;
     final TextEditingController amountController = TextEditingController();
+    final TextEditingController phoneController = TextEditingController();
     String selectedPayment = 'MTN CI';
     int calculatedInterest = 0;
     int selectedValue = 1;
+    double totalAmount = 0; // Montant total (montant saisi + intérêt)
+    double amountPerTerm = 0; // Montant à payer par trimestre
+
+    bool isPhoneFieldEnabled = true;
+    String getPhoneHint() {
+      if (selectedPayment == 'MTN CI') return 'Ex: 05XXXXXXXX';
+      if (selectedPayment == 'ORANGE CI') return 'Ex: 07XXXXXXXX';
+      if (selectedPayment == 'WAVE') return 'Ex: XXXXXXXXXXXX';
+      return '';
+    }
+
+    String? getPhonePrefix() {
+      if (selectedPayment == 'MTN CI') return '05';
+      if (selectedPayment == 'ORANGE CI') return '07';
+      return null;
+    }
+
+    @override
+    void dispose() {
+      phoneController.dispose();
+      super.dispose();
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -403,11 +429,14 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                     TextFormField(
                       initialValue: NumberFormat('#,##0').format(maxLoanAmount),
                       enabled: false,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                     
                       decoration: InputDecoration(
+                         labelStyle: TextStyle(
+                            fontSize: 18,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.normal,
+                        ),
                         labelText: 'Montant maximum',
                         border: OutlineInputBorder(),
                         filled: true,
@@ -423,13 +452,22 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                         fontWeight: FontWeight.bold,
                       ),
                       decoration: InputDecoration(
+                         labelStyle: TextStyle(
+                            fontSize: 18,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.normal,
+                        ),
                         labelText: 'Montant à emprunter',
                         border: OutlineInputBorder(),
                       ),
                       onChanged: (value) {
-                        final input = int.tryParse(value) ?? 0;
+                        final input =
+                            int.tryParse(value.replaceAll(' ', '')) ?? 0;
                         setModalState(() {
-                          calculatedInterest = (input * 1.07).round();
+                          calculatedInterest = (input * 0.07).round();
+                          totalAmount = (input + calculatedInterest).toDouble();
+                          amountPerTerm = totalAmount / selectedValue;
                         });
                       },
                     ),
@@ -445,7 +483,13 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                                 : '',
                       ),
                       decoration: InputDecoration(
-                        labelText: 'Montant total (avec 7%)',
+                          labelStyle: TextStyle(
+                            fontSize: 18,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.normal,
+                        ),
+                        labelText: 'Taux d\'intérêt(7%)',
                         border: OutlineInputBorder(),
                         fillColor: Colors.grey[200],
                         filled: true,
@@ -456,7 +500,7 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Nombre de trismestre :',
+                          'Nombre de trimestres :',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -474,7 +518,8 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                                   onChanged: (val) {
                                     setModalState(() {
                                       selectedValue = val!;
-                                      print(val);
+                                      amountPerTerm =
+                                          totalAmount / selectedValue;
                                     });
                                   },
                                 ),
@@ -484,6 +529,28 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                           }),
                         ),
                       ],
+                    ),
+                    SizedBox(height: 12),
+                    TextFormField(
+                      enabled: false,
+                      controller: TextEditingController(
+                        text:
+                            amountPerTerm > 0
+                                ? '${NumberFormat('#,##0').format(amountPerTerm)} '
+                                : '',
+                      ),
+                      decoration: InputDecoration(
+                        labelStyle: TextStyle(
+                            fontSize: 18,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.bold,
+                          fontStyle: FontStyle.normal,
+                        ),
+                        labelText: 'Remboursement par trimestre',
+                        border: OutlineInputBorder(),
+                        fillColor: Colors.grey[200],
+                        filled: true,
+                      ),
                     ),
                     SizedBox(height: 10),
                     Align(
@@ -496,24 +563,124 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                         ),
                       ),
                     ),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: paymentMethods.length,
-                      itemBuilder: (context, index) {
-                        final method = paymentMethods[index];
-                        return _buildRadioOption(
-                          method.label,
-                          method.image,
-                          selectedPayment,
-                          (val) {
-                            setModalState(() => selectedPayment = val!);
-                            print(index);
-                          },
-                        );
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children:
+                            paymentMethods.map((method) {
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 16.0),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Bouton radio avec l'image
+                                    Radio<String>(
+                                      value: method.label,
+                                      groupValue: selectedPayment,
+                                      onChanged: (val) {
+                                        setModalState(() {
+                                          selectedPayment = val!;
+                                          isPhoneFieldEnabled = val != 'CASH';
+
+                                          if (val == 'MTN CI') {
+                                            phoneController.text = '05';
+                                          } else if (val == 'ORANGE CI') {
+                                            phoneController.text = '07';
+                                          } else if (val == 'CASH') {
+                                            phoneController.text = '';
+                                          }
+                                        });
+                                      },
+                                    ),
+                                    // Image du mode de paiement
+                                    Image.asset(
+                                      method.image,
+                                      width: 40,
+                                      height: 40,
+                                    ),
+                                    // Label
+                                    Text(method.label),
+                                  ],
+                                ),
+                              );
+                            }).toList(),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      controller: phoneController,
+                      enabled: isPhoneFieldEnabled,
+                      keyboardType: TextInputType.phone,
+                      decoration: InputDecoration(
+                        labelText: 'Numéro de téléphone',
+                        hintText: getPhoneHint(),
+                        border: OutlineInputBorder(),
+                        filled: !isPhoneFieldEnabled,
+                        fillColor: Colors.grey[200],
+                        prefixText: getPhonePrefix(),
+                      ),
+                      onChanged: (value) {
+                        final prefix = getPhonePrefix() ?? '';
+                        final maxDigits = 10;
+                        print(prefix + '-' + value);
+                        if (value.length > 8) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            showDialog(
+                              context: context,
+                              builder:
+                                  (context) => AlertDialog(
+                                    title: Text(
+                                      'Numéro invalide !',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                    content: Text(
+                                      'Le numéro ne doit pas dépasser $maxDigits chiffres',
+                                      style: TextStyle(fontSize: 14),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(context),
+                                        child: Text('OK'),
+                                      ),
+                                    ],
+                                  ),
+                            );
+                            phoneController.text = value.substring(0, 10);
+                            phoneController.selection = TextSelection.collapsed(
+                              offset: 8,
+                            );
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (isPhoneFieldEnabled) {
+                          if (value == null || value.isEmpty) {
+                            return 'Ce champ est obligatoire';
+                          }
+
+                          final prefix = getPhonePrefix() ?? '';
+                          final numberWithoutPrefix = value.replaceFirst(
+                            prefix,
+                            '',
+                          );
+
+                          if (numberWithoutPrefix.length >
+                              (8 - prefix.length)) {
+                            return 'Trop de chiffres après le préfixe (max ${8 - prefix.length})';
+                          }
+
+                          if (selectedPayment == 'MTN CI' &&
+                              !value.startsWith('05')) {
+                            return 'Le numéro MTN doit commencer par 05';
+                          }
+                          if (selectedPayment == 'ORANGE CI' &&
+                              !value.startsWith('07')) {
+                            return 'Le numéro ORANGE doit commencer par 07';
+                          }
+                        }
+                        return null;
                       },
                     ),
-
                     SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
@@ -527,7 +694,7 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                         padding: EdgeInsets.symmetric(
                           horizontal: 40,
                           vertical: 12,
-                        ), // largeur contrôlée par padding
+                        ),
                       ),
                     ),
                     SizedBox(height: 20),

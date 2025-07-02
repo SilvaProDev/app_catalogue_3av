@@ -58,7 +58,7 @@ class CfCentral extends StatelessWidget {
                       ),
                       trailing: CircleAvatar(
                         radius: 30,
-                        backgroundImage: AssetImage("images/doctor1.jpg"),
+                        backgroundImage: AssetImage("images/doctor5.jpeg"),
                       ),
                     ),
                   ],
@@ -114,7 +114,7 @@ class CfCentral extends StatelessWidget {
                       ),
                       trailing: CircleAvatar(
                         radius: 30,
-                        backgroundImage: AssetImage("images/doctor1.jpg"),
+                        backgroundImage: AssetImage("images/doctor5.jpeg"),
                       ),
                     ),
                   ],
@@ -170,7 +170,7 @@ class CfCentral extends StatelessWidget {
                       ),
                       trailing: CircleAvatar(
                         radius: 30,
-                        backgroundImage: AssetImage("images/doctor1.jpg"),
+                        backgroundImage: AssetImage("images/doctor5.jpeg"),
                       ),
                     ),
                   ],
@@ -226,7 +226,7 @@ class CfCentral extends StatelessWidget {
                       ),
                       trailing: CircleAvatar(
                         radius: 30,
-                        backgroundImage: AssetImage("images/doctor1.jpg"),
+                        backgroundImage: AssetImage("images/doctor5.jpeg"),
                       ),
                     ),
                   ],

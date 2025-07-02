@@ -79,7 +79,7 @@ class _LoanListPageState extends State<LoanListPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Demandes de prêt"),
+        title: Text("Etat de demandes de prêt"),
         centerTitle: true,
       ),
       body: Padding(
