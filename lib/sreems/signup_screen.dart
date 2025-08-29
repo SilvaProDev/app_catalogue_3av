@@ -1,7 +1,9 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../controllers/auth_controller.dart';
 import 'custom_button.dart';
 import 'custom_field.dart';
 
@@ -14,11 +16,11 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  // États des cases à cocher
-  bool _is3AVChecked = false;
-  bool _isMUCAFChecked = false;
-  bool _isAMCOFChecked = false;
-
+ 
+ final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+ final AuthentificationController _authentificationController =
+      Get.put(AuthentificationController());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -75,7 +77,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             gradientColors: [
                               Color(0xFF4A154B),
                               Color(0xFF6B1A6B),
-                            ],
+                            ], controller: _emailController,
                           ),
                           SizedBox(height: 20),
                           CustomTextField(
@@ -84,7 +86,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             gradientColors: [
                               Color(0xFF4A154B),
                               Color(0xFF6B1A6B),
-                            ],
+                            ], controller: _emailController,
                           ),
                           SizedBox(height: 20),
                           CustomTextField(
@@ -93,7 +95,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             gradientColors: [
                               Color(0xFF4A154B),
                               Color(0xFF6B1A6B),
-                            ],
+                            ], controller: _emailController,
                           ),
                           SizedBox(height: 20),
                           CustomTextField(
@@ -103,7 +105,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             gradientColors: [
                               Color(0xFF4A154B),
                               Color(0xFF6B1A6B),
-                            ],
+                            ], controller: _emailController,
                           ),
                           SizedBox(height: 20),
                           CustomTextField(
@@ -113,7 +115,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             gradientColors: [
                               Color(0xFF4A154B),
                               Color(0xFF6B1A6B),
-                            ],
+                            ], controller: _emailController,
                           ),
                           SizedBox(height: 40),
                           // Row des Checkbox
@@ -122,23 +124,7 @@ class _SignupScreenState extends State<SignupScreen> {
                             delay: Duration(milliseconds: 300),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              // children: [
-                              //   _buildCheckbox("3AV", _is3AVChecked, (bool? value) {
-                              //     setState(() {
-                              //       _is3AVChecked = value ?? false;
-                              //     });
-                              //   }),
-                              //   _buildCheckbox("MUCAF", _isMUCAFChecked, (bool? value) {
-                              //     setState(() {
-                              //       _isMUCAFChecked = value ?? false;
-                              //     });
-                              //   }),
-                              //   _buildCheckbox("AMCOF", _isAMCOFChecked, (bool? value) {
-                              //     setState(() {
-                              //       _isAMCOFChecked = value ?? false;
-                              //     });
-                              //   }),
-                              // ],
+                              
                             ),
                           ),
                         ],
@@ -161,26 +147,6 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // Méthode pour construire une Checkbox avec un libellé
-  Widget _buildCheckbox(String label, bool value, Function(bool?) onChanged) {
-    return Row(
-      children: [
-        Checkbox(
-          value: value,
-          onChanged: onChanged,
-          activeColor: Color(0xFF4A154B), // Couleur violette pour rester cohérent
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Color(0xFF1D1C1D),
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
     );
   }
 }

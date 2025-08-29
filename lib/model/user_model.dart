@@ -1,53 +1,71 @@
 import 'service_model.dart';
 
 class User {
-  final int id;
-  final String nom;
-  final String prenom;
-  final String numero;
-  final String fonction;
-  final String emploi;
-  final String grade;
-  final String image;
-  final Service service;
+   int id;
+    String nom;
+    String prenom;
+    String? telephone;
+    String? email;
+    String? fonction;
+    String? emploi;
+    String? matricule;
+    String? grade;
+    int? fonction_id;
+    int? emploi_id;
+    int role_id;
+    int? grade_id;
+    String? image;
+   Service? service;
 
   User({
     required this.id,
     required this.nom,
     required this.prenom,
-    required this.numero,
-    required this.fonction,
-    required this.emploi,
-    required this.grade,
-    required this.image,
-    required this.service,
+   required this.role_id,
+    this.telephone,
+    this.fonction_id,
+    this.fonction,
+    this.emploi_id,
+    this.matricule,
+    this.emploi,
+    this.grade_id,
+    this.grade,
+    this.email,
+    this.image,
+    this.service,
   });
 
-  factory User.fromMap(Map<String, dynamic> map) {
+  factory User.fromJson(Map<String, dynamic> map) {
     return User(
-      id: map['id'],
-      nom: map['nom'],
-      prenom: map['prenom'],
-      numero: map['numero'],
-      fonction: map['fonction'],
-      emploi: map['emploi'],
-      grade: map['grade'],
+      id: map['id'] ?? 0, // Valeur par défaut si null
+      nom: map['nom'] ?? '',
+      prenom: map['prenom'] ?? '',
+      matricule: map['matricule'] ?? '',
+      email: map['email'] ?? '',
+      telephone: map['telephone'],
+      fonction_id: map['fonction_id'],
+      emploi_id: map['emploi_id'],
+      grade_id: map['grade_id'],
+      role_id: map['role_id'],
       image: map['image'],
-      service: Service.fromMap(map['service']),
+      service: map['service'] != null ? Service.fromJson(map['service']) : null,
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() { // Renommé de fromJson à toJson pour la convention
     return {
       'id': id,
       'nom': nom,
       'prenom': prenom,
-      'numero': numero,
-      'fonction': fonction,
-      'emploi': emploi,
-      'grade': grade,
+      'matricule': matricule,
+      'email': email,
+      'telephone': telephone,
+      'fonction_id': fonction_id,
+      'emploi_id': emploi_id,
+      'grade_id': grade_id,
+      'role_id': role_id,
       'image': image,
-      'service': service.toMap(),
+      'service': service?.toJson(), // Utilisation de l'opérateur null-aware
     };
   }
 }

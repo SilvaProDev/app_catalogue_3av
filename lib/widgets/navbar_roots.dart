@@ -1,7 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-
 import '../pages/finances.dart';
 import '../sreems/dashbord_screem.dart';
 import '../sreems/desk_screem.dart';
@@ -23,22 +21,15 @@ class _NavBarRootsState extends State<NavBarRoots> {
   int _indexSelected = 0;
 
   final _screems = [
-    //Accueil screem
-    HomeScreem(),
-     //Service screem
-    ServiceScreem(),
-    //Actualité Screem
+    // HomeScreem(),
+     ServiceScreem(),
     NewsScreem(),
-    //organigramme screem
-     OrgChartPage(),
-    //finace screem
+    OrgChartPage(),
     MemberLoansScreen(),
-   
-    //dashbord Screem
     // DashboardScreen(),
-    //Setting screem
-    SettingsScreen(),
+     SettingsScreen(),
   ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,11 +40,14 @@ class _NavBarRootsState extends State<NavBarRoots> {
         child: BottomNavigationBar(
           backgroundColor: Colors.white,
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: Color(0xFF7165D6),
+          selectedItemColor: const Color(0xFF7165D6),
           unselectedItemColor: Colors.black,
-          selectedLabelStyle: TextStyle(
+          selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontSize: 12,  // Réduit pour un meilleur affichage
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 12,
           ),
           currentIndex: _indexSelected,
           onTap: (value) {
@@ -61,20 +55,22 @@ class _NavBarRootsState extends State<NavBarRoots> {
               _indexSelected = value;
             });
           },
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_filled),
+          items: const [
+            // BottomNavigationBarItem(
+            //   icon: Icon(Icons.home_filled),
+            //   label: "Accueil",
+            // ),
+             BottomNavigationBarItem(
+              icon: Icon(Icons.work),
               label: "Accueil",
             ),
              BottomNavigationBarItem(
-              icon: Icon(Icons.work),
-              label: "Répertoire",
-            ),
-            BottomNavigationBarItem(
               icon: Icon(CupertinoIcons.news),
               label: "Actualité",
             ),
-             BottomNavigationBarItem(
+           
+           
+            BottomNavigationBarItem(
               icon: Icon(Icons.desk),
               label: "Bureau",
             ),
@@ -82,16 +78,13 @@ class _NavBarRootsState extends State<NavBarRoots> {
               icon: Icon(Icons.trending_up),
               label: "Finance",
             ),
-           
-           
-            //  BottomNavigationBarItem(
+            // BottomNavigationBarItem(
             //   icon: Icon(Icons.assignment),
             //   label: "Dashbord",
             // ),
-           
             BottomNavigationBarItem(
               icon: Icon(Icons.settings),
-              label: "parametre",
+              label: "Paramètres",
             ),
           ],
         ),

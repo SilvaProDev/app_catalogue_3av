@@ -5,12 +5,16 @@ class CustomTextField extends StatelessWidget {
   final String hint;
   final bool isPassword;
   final List<Color> gradientColors;
-  const CustomTextField(
-      {super.key,
-      required this.icon,
-      required this.hint,
-      this.isPassword = false,
-      required this.gradientColors});
+  final TextEditingController controller; // ✅ ajouter ce champ
+
+  const CustomTextField({
+    super.key,
+    required this.icon,
+    required this.hint,
+    this.isPassword = false,
+    required this.gradientColors,
+    required this.controller, // ✅ ajouter ici aussi
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -27,34 +31,36 @@ class CustomTextField extends StatelessWidget {
         ],
       ),
       child: TextField(
+        controller: controller, // ✅ passer le controller ici
         obscureText: isPassword,
         style: TextStyle(
           color: Color(0xFF1D1C1D),
         ),
         decoration: InputDecoration(
-            prefixIcon: ShaderMask(
-              shaderCallback: (bounds) => LinearGradient(
-                colors: gradientColors,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ).createShader(bounds),
-              child: Icon(
-                icon,
-                color: Colors.white,
-              ),
+          prefixIcon: ShaderMask(
+            shaderCallback: (bounds) => LinearGradient(
+              colors: gradientColors,
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds),
+            child: Icon(
+              icon,
+              color: Colors.white,
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
-            ),
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: Color(0xFF1D1D1D).withOpacity(0.5),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 16,
-            )),
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          hintText: hint,
+          hintStyle: TextStyle(
+            color: Color(0xFF1D1D1D).withOpacity(0.5),
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+        ),
       ),
     );
   }

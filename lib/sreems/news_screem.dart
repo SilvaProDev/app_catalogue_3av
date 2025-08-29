@@ -1,11 +1,12 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
+import '../constants/constants.dart';
+import '../controllers/finance_controller.dart';
 import '../model/carousel_slider.dart';
 import '../pages/article_detail_page.dart';
-import '../services/slider_data.dart';
-// ... autres imports
 
 class NewsScreem extends StatefulWidget {
   const NewsScreem({super.key});
@@ -15,25 +16,31 @@ class NewsScreem extends StatefulWidget {
 }
 
 class _NewsScreemState extends State<NewsScreem> {
-  List<CarouselSilderModel> sliders = [];
+  final FinanceController _financeController = Get.put(FinanceController());
   int activeIndex = 0;
   
+  late Future<List<CarouselSliderModel>> _slidersFuture;
+
   @override
   void initState() {
-    sliders = getCarouselSlider();
     super.initState();
+    _slidersFuture = _loadSliders();
+  }
+
+  Future<List<CarouselSliderModel>> _loadSliders() async {
+    await _financeController.getListeActualite();
+    return _financeController.actualites;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
         elevation: 5.2,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Actualités des "),
+            const Text("Actualités des "),
             Text(
               "3AV",
               style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
@@ -41,34 +48,44 @@ class _NewsScreemState extends State<NewsScreem> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          // Partie supérieure fixe (carrousel et indicateur)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      body: FutureBuilder<List<CarouselSliderModel>>(
+        future: _slidersFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text("Aucune actualité disponible."));
+          }
+
+          final sliders = snapshot.data!;
+
+          return Column(
             children: [
+              // Partie carrousel
               Padding(
-                padding: EdgeInsets.only(left: 10, right: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Images d'actualités",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Pacifico',
-                      ),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Images d'actualités",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Pacifico',
                     ),
-                  ],
+                  ),
                 ),
               ),
               SizedBox(height: 10),
               CarouselSlider.builder(
                 itemCount: sliders.length,
                 itemBuilder: (context, index, realIndex) {
-                  return buildImage(sliders[index].image!, index, sliders[index].name!);
+                  final item = sliders[index];
+                  return buildImage(item.fichier ?? '', item.title ?? '', () {
+                    print('Image tapée: ${item.id}');
+                    // par exemple : Navigator.push(...) ou autre action
+                  });
                 },
                 options: CarouselOptions(
                   height: 240,
@@ -76,165 +93,183 @@ class _NewsScreemState extends State<NewsScreem> {
                   enlargeCenterPage: true,
                   enlargeStrategy: CenterPageEnlargeStrategy.height,
                   onPageChanged: (index, reason) {
-                    setState(() {
-                      activeIndex = index;
-                    });
+                    setState(() => activeIndex = index);
                   },
                 ),
               ),
               SizedBox(height: 10),
-              Center(child: buildIndicator()),
+              buildIndicator(sliders.length),
               SizedBox(height: 15),
+
+              // Partie liste des actualités
               Padding(
-                padding: EdgeInsets.only(left: 10, right: 10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Liste d'actualités !",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              Expanded(
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  itemCount: sliders.length,
+                  separatorBuilder: (_, __) => SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    final item = sliders[index];
+                    return _buildNewsItem(item);
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget buildImage(String image, String title, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(
+              '$imageUrl/$image',
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  color: Colors.grey.shade200,
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              },
+              errorBuilder:
+                  (context, error, stackTrace) => Container(
+                    color: Colors.grey,
+                    child: Icon(
+                      Icons.broken_image,
+                      color: Colors.white,
+                      size: 50,
+                    ),
+                  ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                color: Colors.black45,
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewsItem(CarouselSliderModel item) {
+    return Material(
+      elevation: 3,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => ArticleDetailPage(article: item)),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(5.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: Image.network(
+                  '$imageUrl/${item.fichier}',
+                  height: 120,
+                  width: 120,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      width: 120,
+                      height: 120,
+                      color: Colors.grey.shade200,
+                      child: Center(child: CircularProgressIndicator()),
+                    );
+                  },
+                  errorBuilder:
+                      (context, error, stackTrace) => Container(
+                        width: 120,
+                        height: 120,
+                        color: Colors.grey,
+                        child: Icon(Icons.broken_image, color: Colors.white),
+                      ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Liste d'actualités !",
+                      item.title ?? '',
                       style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 5),
+                    Text(
+                      item.description ?? '',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          
-          // Partie défilante (liste d'actualités)
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  for (int i = 0; i < sliders.length; i++)
-            Padding(
-              padding: EdgeInsets.only(bottom: i == sliders.length - 1 ? 0 : 10),
-              child: _buildNewsItem(
-                context,
-                sliders[i].image!,
-                sliders[i].name!,
-                sliders[i].description!,
-                sliders[i],
-              ),
-            ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNewsItem(BuildContext context, String image, String title, String description, CarouselSilderModel article) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      child: Material(
-        elevation: 3.0,
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ArticleDetailPage(article: article),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(5.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.asset(
-                    image,
-                    height: 120,
-                    width: 120,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      SizedBox(height: 5),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
   }
 
-  Widget buildImage(String image, int index, String name) => Container(
-    margin: EdgeInsets.symmetric(horizontal: 5.0),
-    child: Stack(
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: Image.asset(
-            image,
-            height: 250,
-            fit: BoxFit.cover,
-            width: MediaQuery.of(context).size.width,
-          ),
-        ),
-        Container(
-          height: 250,
-          padding: EdgeInsets.only(left: 10),
-          margin: EdgeInsets.only(top: 170),
-          width: MediaQuery.of(context).size.width,
-          decoration: BoxDecoration(
-            color: Colors.black26,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(10),
-              bottomRight: Radius.circular(10),
-            ),
-          ),
-          child: Text(
-            name,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18.0,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-
-  Widget buildIndicator() => AnimatedSmoothIndicator(
-    activeIndex: activeIndex,
-    count: sliders.length,
-    effect: SlideEffect(
-      dotHeight: 15,
-      dotWidth: 15,
-      activeDotColor: Colors.blue,
-    ),
-  );
+  Widget buildIndicator(int count) {
+    return AnimatedSmoothIndicator(
+      activeIndex: activeIndex,
+      count: count,
+      effect: SlideEffect(
+        dotHeight: 10,
+        dotWidth: 10,
+        activeDotColor: Colors.blue,
+      ),
+    );
+  }
 }

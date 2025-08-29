@@ -72,49 +72,49 @@ Widget _buildCustomNode(String id) {
   // Données simulées avec image réseau (ou asset)
   final Map<String, Map<String, String>> nodeData = {
     'PRESIDENT': {
-      'name': 'Aboubacar S Berthe',
+      'name': 'BERTE A Sidick',
       'position': 'PRESIDENT',
       'email': 'Aboubacar@gmail.com',
-      'phone': '0707164609',
+      'phone': '0101365610/0707601291',
       'image': 'doctor5.jpeg',
     },
     'VICE': {
-      'name': 'GUILLAUME KOUA',
+      'name': 'KOUA Guillaume',
       'position': 'VICE PRESIDENT',
       'email': 'bob@example.com',
-      'phone': '234-567-8901',
+      'phone': '0141048494/0708746383',
       'image': 'doctor5.jpeg',
     },
     'CONSEILLER': {
-      'name': 'MEL MELESS DARIUS',
+      'name': 'MEL Meless Darius',
       'position': 'CONSEILLER SOCIALES',
       'email': 'meless@gmail.com',
-      'phone': '0778596854',
+      'phone': '0708115631/0103403536',
       'image': 'doctor5.jpeg',
     },
     'SECRETAIRE': {
-      'name': 'FULGENCE K KONAN',
+      'name': 'KOUAME K Fulgence',
       'position': 'SECRETAIRE GENERAL',
       'email': 'konan@gmail.com',
       'phone': '0141525487',
       'image': 'doctor5.jpeg',
     },
     'TRESORIERE': {
-      'name': 'KOUAKOU E.A JUSKA',
+      'name': 'KOUAKOU E A Juska',
       'position': 'TRESORIERE GENRALE',
       'email': 'juska@gmail.com',
-      'phone': '0152636984',
-      'image': 'doctor5.jpeg',
+      'phone': '0757331486',
+      'image': 'Juska.jpg',
     },
     'SECRETAIRE-ADJOINT': {
-      'name': 'KOUASSI E.S VINCENT',
+      'name': 'KOUASSI S V Elysée',
       'position': 'SECRETAIRE GENERAL ADJOINT',
       'email': 'vincent@gmail.com',
       'phone': '0546134587',
       'image': 'doctor5.jpeg',
     },
     'TRESORIERE-ADJOINTE': {
-      'name': 'GNEPA EPSE KOUAME',
+      'name': 'GNEPA  epse KOUAME',
       'position': 'TRESORIERE GENRALE ADJOINTE',
       'email': 'juska@gmail.com',
       'phone': '0506010204',
@@ -137,7 +137,7 @@ Widget _buildCustomNode(String id) {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundImage: AssetImage("images/${data['image']!}"),
+                    backgroundImage:  AssetImage("images/${data['image']!}"),
                   ),
                   const SizedBox(height: 10),
                   Text('Poste: ${data['position']}'),
@@ -170,11 +170,11 @@ Widget _buildCustomNode(String id) {
             const SizedBox(height: 5),
             Text(
               data['name']!,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
             ),
             Text(
               data['position']!, 
-              style: const TextStyle(color: Colors.grey)
+              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)
               ),
           ],
         ),

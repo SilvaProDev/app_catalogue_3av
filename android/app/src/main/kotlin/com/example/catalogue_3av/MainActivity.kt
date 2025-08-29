@@ -1,4 +1,4 @@
-package com.example.catalogue_3av
+package com.av3.catalogue
 
 import io.flutter.embedding.android.FlutterActivity
 

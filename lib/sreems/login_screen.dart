@@ -1,15 +1,29 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../controllers/auth_controller.dart';
 import '../widgets/navbar_roots.dart';
 import 'custom_button.dart';
 import 'custom_field.dart';
 import 'director_word.dart';
 
-class LoginScreen extends StatelessWidget {
-  // final VoidCallback onSignUpTap;
-  const LoginScreen({Key? key, required Null Function() onLoginTap}) : super(key: key);
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key, required Null Function() onLoginTap})
+    : super(key: key);
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _matriculeController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final AuthentificationController _authentificationController = Get.put(
+    AuthentificationController(),
+  );
+  bool _isLoading = false; // Ajout d'un état de chargement
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +34,11 @@ class LoginScreen extends StatelessWidget {
           // Background image
           Positioned.fill(
             child: Opacity(
-              
-              opacity: 0.2, // Ajustez l'opacité selon vos besoins
-              child: Image.asset(
-                'images/logo.jpg',
-                fit: BoxFit.cover,
-              ),
+              opacity: 0.2,
+              child: Image.asset('images/logo.jpg', fit: BoxFit.cover),
             ),
-           
           ),
-          
+
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -54,7 +63,7 @@ class LoginScreen extends StatelessWidget {
                                     color: Colors.black12,
                                     blurRadius: 10,
                                     spreadRadius: 2,
-                                  )
+                                  ),
                                 ],
                               ),
                               child: ClipOval(
@@ -65,7 +74,7 @@ class LoginScreen extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(height: 16),
+                          SizedBox(height: 20),
                           Center(
                             child: Text(
                               'Connexion',
@@ -87,59 +96,73 @@ class LoginScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           CustomTextField(
-                            icon: CupertinoIcons.mail,
-                            hint: 'Email',
-                            gradientColors: [Color(0xFF4A154B), Color(0xFF6B1A6B)],
+                            icon: CupertinoIcons.person_crop_rectangle,
+                            hint: 'Matricule',
+                            controller: _matriculeController,
+                            gradientColors: [
+                              Color(0xFF4A154B),
+                              Color(0xFF6B1A6B),
+                            ],
                           ),
-                          SizedBox(height: 20),
+                          SizedBox(height: 30),
                           CustomTextField(
                             icon: CupertinoIcons.lock,
                             hint: 'Password',
+                            controller: _passwordController,
                             isPassword: true,
-                            gradientColors: [Color(0xFF4A154B), Color(0xFF6B1A6B)],
+                            gradientColors: [
+                              Color(0xFF4A154B),
+                              Color(0xFF6B1A6B),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 30),
+                    SizedBox(height: 40),
                     FadeInUp(
                       duration: Duration(milliseconds: 600),
                       delay: Duration(milliseconds: 400),
-                      child: CustomButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => DirectorWord()),
-                          );
-                        },
-                        text: 'Se connecter',
-                      ),
+                      child:
+                          _isLoading
+                              ? Center(child: CircularProgressIndicator())
+                              : CustomButton(
+                                onPressed: () async {
+                                  if (_matriculeController.text.isEmpty ||
+                                      _passwordController.text.isEmpty) {
+                                    Get.snackbar(
+                                      backgroundColor: Colors.red,
+                                      colorText: Colors.white,
+                                      'Erreur',
+                                      'Veuillez remplir tous les champs',
+                                      snackPosition: SnackPosition.TOP,
+                                    );
+                                    return;
+                                  }
+
+                                  setState(() => _isLoading = true);
+
+                                  try {
+                                    await _authentificationController.login(
+                                      matricule: _matriculeController.text.trim(),
+                                      password: _passwordController.text.trim(),
+                                    );
+
+                                    // Si la connexion réussit, naviguer vers l'écran d'accueil
+                                   // Get.offAll(() => NavBarRoots());
+                                  } catch (e) {
+                                    Get.snackbar(
+                                      'Erreur',
+                                      'Échec de la connexion: ${e.toString()}',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  } finally {
+                                    setState(() => _isLoading = false);
+                                  }
+                                },
+                                text: 'Se connecter',
+                              ),
                     ),
-                    SizedBox(height: 24),
-                    FadeIn(
-                      duration: Duration(milliseconds: 600),
-                      delay: Duration(milliseconds: 600),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        // children: [
-                        //   Text(
-                        //     "Avez-vous déjà un compte ? ",
-                        //     style: TextStyle(color: Color(0xFF1D1C1D)),
-                        //   ),
-                        //   GestureDetector(
-                        //     onTap: (){},
-                        //     child: Text(
-                        //       'S\'inscrire',
-                        //       style: TextStyle(
-                        //         color: Color(0xFF4A154B),
-                        //         fontWeight: FontWeight.bold,
-                        //       ),
-                        //     ),
-                        //   ),
-                        // ],
-                      ),
-                    ),
-                    SizedBox(height: 40),
+                         SizedBox(height: 40),
                     FadeInUp(
                       duration: Duration(milliseconds: 600),
                       delay: Duration(milliseconds: 800),
@@ -147,74 +170,10 @@ class LoginScreen extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              // Expanded(
-                              //   child: Container(
-                              //     height: 1,
-                              //     decoration: BoxDecoration(
-                              //       gradient: LinearGradient(
-                              //         colors: [
-                              //           Colors.transparent,
-                              //           Color(0xFFE0E0E0),
-                              //         ],
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
-                              // Padding(
-                              //   padding: EdgeInsets.symmetric(horizontal: 16),
-                              //   child: Text(
-                              //     "Connectez-vous avec",
-                              //     style: TextStyle(
-                              //       color: Color(0xFF1D1C1D),
-                              //       fontWeight: FontWeight.w500,
-                              //     ),
-                              //   ),
-                              // ),
-                              // Expanded(
-                              //   child: Container(
-                              //     height: 1,
-                              //     decoration: BoxDecoration(
-                              //       gradient: LinearGradient(
-                              //         colors: [
-                              //           Colors.transparent,
-                              //           Color(0xFFE0E0E0),
-                              //         ],
-                              //       ),
-                              //     ),
-                              //   ),
-                              // ),
+                            
                             ],
                           ),
-                          // SizedBox(height: 30),
-                          // Row(
-                          //   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          //   children: [
-                          //     ElasticIn(
-                          //       duration: Duration(milliseconds: 800),
-                          //       delay: Duration(milliseconds: 1000),
-                          //       child: _buildSocialButton(
-                          //         icon: Icons.g_mobiledata,
-                          //         label: 'Google',
-                          //         gradientColors: [
-                          //           Color(0xFFDB4437),
-                          //           Color(0xFFF66D5B),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //     ElasticIn(
-                          //       duration: Duration(milliseconds: 800),
-                          //       delay: Duration(milliseconds: 1200),
-                          //       child: _buildSocialButton(
-                          //         icon: Icons.apple,
-                          //         label: 'Apple',
-                          //         gradientColors: [
-                          //           Color(0xFF000000),
-                          //           Color(0xFF2C2C2C),
-                          //         ],
-                          //       ),
-                          //     ),
-                          //   ],
-                          // ),
+                          
                           SizedBox(height: 200),
                         ],
                       ),
@@ -222,42 +181,6 @@ class LoginScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSocialButton({
-    required IconData icon,
-    required String label,
-    required List<Color> gradientColors,
-  }) {
-    return Container(
-      height: 55,
-      width: 150,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            gradientColors[0].withOpacity(0.1),
-            gradientColors[1].withOpacity(0.1),
-          ],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: gradientColors[0]),
-          SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: gradientColors[0],
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],

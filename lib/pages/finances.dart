@@ -1,6 +1,11 @@
+import 'package:catalogue_3av/widgets/finance/firstEmprunt.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../controllers/finance_controller.dart';
 import '../model/mode_paiement.dart';
+import '../widgets/finance/globalSummary.dart';
+import '../widgets/finance/loanRepayement.dart';
 import '../widgets/navbar_roots.dart';
 
 class MemberLoansScreen extends StatefulWidget {
@@ -10,23 +15,18 @@ class MemberLoansScreen extends StatefulWidget {
 
 class _MemberLoansScreenState extends State<MemberLoansScreen>
     with SingleTickerProviderStateMixin {
+  final FinanceController _financeController = Get.put(FinanceController());
+
   late TabController _tabController;
-
-  final Map<String, List<Loan>> loansByMutual = {
-    '3AV': [
-      Loan(amount: 500000, date: DateTime(2025, 5, 10)),
-      Loan(amount: 200000, date: DateTime(2025, 3, 15)),
-    ],
-  };
-
-  final List<Repayment> repayments = [
-    Repayment(mutual: '3AV', amount: 150000, date: DateTime(2025, 9, 12)),
-  ];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    // });
+    _financeController.getListePret();
+    _financeController.getListeRemboursement();
   }
 
   @override
@@ -44,22 +44,39 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
           },
         ),
         centerTitle: true,
-        title: Text('Mes Emprunts', style: TextStyle(color: Colors.white)),
+        title: Text('Mes Finances', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.deepPurple,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add, color: Colors.white),
-            onPressed: _showLoanFormModal,
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.add, color: Colors.white),
+        //     onPressed: _showLoanFormModal,
+        //   ),
+        // ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: [
-            Tab(icon: Icon(Icons.list_alt, color: Colors.white)),
-            Tab(icon: Icon(Icons.payment, color: Colors.white)),
-            Tab(icon: Icon(Icons.analytics, color: Colors.white)),
+          onTap: (index) {
+            if (index == 0) {
+              _showLoanFormModal();
+            }
+          },
+          tabs: const [
+            Tab(
+              icon: Icon(Icons.list_alt, color: Colors.white),
+              text: 'Demandes',
+            ),
+            Tab(
+              icon: Icon(Icons.payment, color: Colors.white),
+              text: 'Paiements',
+            ),
+            Tab(
+              icon: Icon(Icons.analytics, color: Colors.white),
+              text: 'Statistiques',
+            ),
           ],
           indicatorColor: Colors.white,
+          labelColor: Colors.white, // Couleur du texte sélectionné
+          unselectedLabelColor:
+              Colors.white70, // Couleur du texte non sélectionné
         ),
       ),
       body: Container(
@@ -83,306 +100,93 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
   // ---------------------
 
   Widget _buildLoansTab() {
-    return ListView(
-      padding: EdgeInsets.all(16),
-      children:
-          loansByMutual.entries.map((entry) {
-            final mutual = entry.key;
-            final loans = entry.value;
-            final totalAmount = loans.fold(0, (sum, loan) => sum + loan.amount);
+    return Obx(() {
+      if (_financeController.isLoading.value) {
+        return Center(child: CircularProgressIndicator());
+      }
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: _getMutualColor().withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(_getMutualIcon()),
-                      SizedBox(width: 10),
-                      Text(
-                        mutual,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: _getMutualColor(),
-                        ),
-                      ),
-                      Spacer(),
-                      Text(
-                        '${NumberFormat('#,##0').format(totalAmount)} FCFA',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 8),
-                ...loans.map(
-                  (loan) => Padding(
-                    padding: EdgeInsets.only(bottom: 8),
-                    child: _buildLoanCard(loan),
-                  ),
-                ),
-                SizedBox(height: 20),
-              ],
-            );
-          }).toList(),
-    );
+      if (_financeController.listePret.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.money_off, size: 50, color: Colors.grey),
+              SizedBox(height: 16),
+              Text("Aucun prêt enregistré", style: TextStyle(fontSize: 18)),
+              SizedBox(height: 8),
+              Text("Cliquez sur + pour faire une demande"),
+            ],
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        onRefresh: () => _financeController.getListePret(),
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: FirstEmprunt(pretList: _financeController.listePret),
+        ),
+      );
+    });
   }
 
   Widget _buildRepaymentsTab() {
-    final totalRepaid = repayments.fold(0, (sum, r) => sum + r.amount);
-
-    return ListView(
-      padding: EdgeInsets.all(16),
-      children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: _getMutualColor().withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+    return Obx(() {
+      if (_financeController.remboursements.isEmpty) {
+        return const Center(
+          child: Text(
+            "Aucun remboursement effectué pour le moment.",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
-          child: Row(
-            children: [
-              Icon(_getMutualIcon()),
-              SizedBox(width: 10),
-              Text(
-                '3AV',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: _getMutualColor(),
-                ),
-              ),
-              Spacer(),
-              Text(
-                '${NumberFormat('#,##0').format(totalRepaid)} FCFA',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: 8),
-        ...repayments.map(
-          (r) => Padding(
-            padding: EdgeInsets.only(bottom: 8),
-            child: _buildRepaymentCard(r),
-          ),
-        ),
-        SizedBox(height: 20),
-      ],
-    );
+        );
+      }
+      return LoanRepaymentScreen(
+        remboursementList: _financeController.remboursements,
+      );
+    });
   }
 
   Widget _buildStatsTab() {
-    final totalLoans = loansByMutual['3AV']!.fold(
-      0,
-      (sum, loan) => sum + loan.amount,
-    );
-    final totalRepaid = repayments.fold(0, (sum, r) => sum + r.amount);
-    final remaining = totalLoans - totalRepaid;
-
-    return Padding(
-      padding: EdgeInsets.all(20),
-      child: Column(
-        children: [
-          _buildStatCard(
-            title: 'Synthèse Globale',
-            children: [
-              _buildStatItem(
-                'Total emprunts',
-                '${NumberFormat('#,##0').format(totalLoans)} FCFA',
-                Icons.credit_card,
-                Colors.deepPurple,
-              ),
-              _buildStatItem(
-                'Total remboursés',
-                '${NumberFormat('#,##0').format(totalRepaid)} FCFA',
-                Icons.payment,
-                Colors.green,
-              ),
-              _buildStatItem(
-                'Reste à payer',
-                '${NumberFormat('#,##0').format(remaining)} FCFA',
-                Icons.timer,
-                Colors.orange,
-              ),
-            ],
+    return Obx(() {
+      if (_financeController.remboursements.isEmpty) {
+        return const Center(
+          child: Text(
+            "Aucun remboursement effectué pour le moment.",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
-        ],
-      ),
-    );
+        );
+      }
+      return GlobalSummary(
+        remboursementList: _financeController.remboursements,
+      );
+    });
   }
-
-  // ---------------------
-  // Widgets
-  // ---------------------
-
-  Widget _buildLoanCard(Loan loan) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        leading: Container(
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: _getMutualColor().withOpacity(0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(Icons.money, color: _getMutualColor(), size: 20),
-        ),
-        title: Text(
-          '${NumberFormat('#,##0').format(loan.amount)} FCFA',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
-          ),
-        ),
-        subtitle: Text(
-          'Emprunté le ${DateFormat('dd/MM/yyyy').format(loan.date)}',
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-        trailing:
-            loan.isRepaid
-                ? Icon(Icons.check_circle, color: Colors.green)
-                : Icon(Icons.access_time, color: Colors.orange),
-      ),
-    );
-  }
-
-  Widget _buildRepaymentCard(Repayment r) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: ListTile(
-        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        leading: Container(
-          padding: EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.green.withOpacity(0.2),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(Icons.attach_money, color: Colors.green, size: 20),
-        ),
-        title: Text(
-          '${NumberFormat('#,##0').format(r.amount)} FCFA',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[800],
-          ),
-        ),
-        subtitle: Text(
-          'Remboursé le ${DateFormat('dd/MM/yyyy').format(r.date)}',
-          style: TextStyle(color: Colors.grey[600]),
-        ),
-        trailing: Icon(Icons.check_circle, color: Colors.green),
-      ),
-    );
-  }
-
-  Widget _buildStatCard({
-    required String title,
-    required List<Widget> children,
-  }) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey[200]!, width: 1),
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
-            ),
-            SizedBox(height: 16),
-            ...children,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatItem(
-    String label,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, size: 20, color: color),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(label, style: TextStyle(color: Colors.grey[600])),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getMutualColor() => Colors.purple;
-  IconData _getMutualIcon() => Icons.credit_card;
 
   // ---------------------
   // Formulaire modale
   // ---------------------
 
   void _showLoanFormModal() {
-    final maxLoanAmount = 1000000;
-    final TextEditingController amountController = TextEditingController();
-    final TextEditingController phoneController = TextEditingController();
+    final TextEditingController _montantController = TextEditingController();
+    final TextEditingController _trimestreController = TextEditingController();
+    final TextEditingController _modePaiementController =
+        TextEditingController();
+    final TextEditingController _contactController = TextEditingController();
+    final TextEditingController _montantTotalController =
+        TextEditingController();
+    final FinanceController _financeController = Get.put(FinanceController());
+    final maxLoanAmount = 500000;
     String selectedPayment = 'MTN CI';
     int calculatedInterest = 0;
-    int selectedValue = 1;
-    double totalAmount = 0; // Montant total (montant saisi + intérêt)
+    int selectedValue = 0;
+    int totalAmount = 0; // Montant total (montant saisi + intérêt)
     double amountPerTerm = 0; // Montant à payer par trimestre
 
     bool isPhoneFieldEnabled = true;
     String getPhoneHint() {
       if (selectedPayment == 'MTN CI') return 'Ex: 05XXXXXXXX';
       if (selectedPayment == 'ORANGE CI') return 'Ex: 07XXXXXXXX';
+      if (selectedPayment == 'MOOV CI') return 'Ex: 01XXXXXXXX';
       if (selectedPayment == 'WAVE') return 'Ex: XXXXXXXXXXXX';
       return '';
     }
@@ -390,12 +194,14 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
     String? getPhonePrefix() {
       if (selectedPayment == 'MTN CI') return '05';
       if (selectedPayment == 'ORANGE CI') return '07';
+      if (selectedPayment == 'MOOV CI') return '01';
       return null;
     }
+  final List<int> trimestres = [1, 2]; // ou n'importe quels nombres
 
     @override
     void dispose() {
-      phoneController.dispose();
+      _contactController.dispose();
       super.dispose();
     }
 
@@ -429,15 +235,15 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                     TextFormField(
                       initialValue: NumberFormat('#,##0').format(maxLoanAmount),
                       enabled: false,
-                     
+
                       decoration: InputDecoration(
-                         labelStyle: TextStyle(
-                            fontSize: 18,
+                        labelStyle: TextStyle(
+                          fontSize: 18,
                           color: Colors.black54,
                           fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.normal,
                         ),
-                        labelText: 'Montant maximum',
+                        labelText: 'Montant maximum (FCFA)',
                         border: OutlineInputBorder(),
                         filled: true,
                         fillColor: Colors.grey[200],
@@ -445,15 +251,15 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                     ),
                     SizedBox(height: 12),
                     TextFormField(
-                      controller: amountController,
+                      controller: _montantController,
                       keyboardType: TextInputType.number,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                       decoration: InputDecoration(
-                         labelStyle: TextStyle(
-                            fontSize: 18,
+                        labelStyle: TextStyle(
+                          fontSize: 18,
                           color: Colors.black54,
                           fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.normal,
@@ -466,7 +272,7 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                             int.tryParse(value.replaceAll(' ', '')) ?? 0;
                         setModalState(() {
                           calculatedInterest = (input * 0.07).round();
-                          totalAmount = (input + calculatedInterest).toDouble();
+                          totalAmount = (input + calculatedInterest);
                           amountPerTerm = totalAmount / selectedValue;
                         });
                       },
@@ -483,8 +289,8 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                                 : '',
                       ),
                       decoration: InputDecoration(
-                          labelStyle: TextStyle(
-                            fontSize: 18,
+                        labelStyle: TextStyle(
+                          fontSize: 18,
                           color: Colors.black54,
                           fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.normal,
@@ -508,25 +314,27 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                         ),
                         SizedBox(height: 6),
                         Row(
-                          children: List.generate(4, (index) {
-                            int value = index + 1;
-                            return Row(
-                              children: [
-                                Radio<int>(
-                                  value: value,
-                                  groupValue: selectedValue,
-                                  onChanged: (val) {
-                                    setModalState(() {
-                                      selectedValue = val!;
-                                      amountPerTerm =
-                                          totalAmount / selectedValue;
-                                    });
-                                  },
-                                ),
-                                Text('$value'),
-                              ],
-                            );
-                          }),
+                          children:
+                              trimestres.map((value) {
+                                return Row(
+                                  children: [
+                                    Radio<int>(
+                                      value: value,
+                                      groupValue: selectedValue,
+                                      onChanged: (val) {
+                                        setModalState(() {
+                                          selectedValue = val!;
+                                          amountPerTerm =
+                                              totalAmount / selectedValue;
+                                          _trimestreController.text =
+                                              value.toString();
+                                        });
+                                      },
+                                    ),
+                                    Text('$value'),
+                                  ],
+                                );
+                              }).toList(),
                         ),
                       ],
                     ),
@@ -541,7 +349,7 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                       ),
                       decoration: InputDecoration(
                         labelStyle: TextStyle(
-                            fontSize: 18,
+                          fontSize: 18,
                           color: Colors.black54,
                           fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.normal,
@@ -581,13 +389,14 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                                         setModalState(() {
                                           selectedPayment = val!;
                                           isPhoneFieldEnabled = val != 'CASH';
-
+                                          _modePaiementController.text =
+                                              val.toString();
                                           if (val == 'MTN CI') {
-                                            phoneController.text = '05';
+                                            _contactController.text = '05';
                                           } else if (val == 'ORANGE CI') {
-                                            phoneController.text = '07';
+                                            _contactController.text = '07';
                                           } else if (val == 'CASH') {
-                                            phoneController.text = '';
+                                            _contactController.text = 'CASH';
                                           }
                                         });
                                       },
@@ -608,7 +417,7 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                     ),
                     SizedBox(height: 20),
                     TextFormField(
-                      controller: phoneController,
+                      controller: _contactController,
                       enabled: isPhoneFieldEnabled,
                       keyboardType: TextInputType.phone,
                       decoration: InputDecoration(
@@ -617,13 +426,12 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                         border: OutlineInputBorder(),
                         filled: !isPhoneFieldEnabled,
                         fillColor: Colors.grey[200],
-                        prefixText: getPhonePrefix(),
+                        //  prefixText: getPhonePrefix(),
                       ),
                       onChanged: (value) {
                         final prefix = getPhonePrefix() ?? '';
                         final maxDigits = 10;
-                        print(prefix + '-' + value);
-                        if (value.length > 8) {
+                        if (value.length > 10) {
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             showDialog(
                               context: context,
@@ -645,10 +453,9 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                                     ],
                                   ),
                             );
-                            phoneController.text = value.substring(0, 10);
-                            phoneController.selection = TextSelection.collapsed(
-                              offset: 8,
-                            );
+                            _contactController.text = value.substring(0, 10);
+                            _contactController
+                                .selection = TextSelection.collapsed(offset: 8);
                           });
                         }
                       },
@@ -683,9 +490,69 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                     ),
                     SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: () {
-                        // Action d'enregistrement ici
-                        Navigator.pop(context);
+                      onPressed: () async {
+                        if (_montantController.text.isEmpty ||
+                            _trimestreController.text.isEmpty ||
+                            _modePaiementController.text.isEmpty ||
+                            _contactController.text.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Veuillez remplir tous les champs'),
+                            ),
+                          );
+                          return;
+                        }
+
+                        try {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder:
+                                (context) =>
+                                    Center(child: CircularProgressIndicator()),
+                          );
+
+                          final montant =
+                              double.tryParse(_montantController.text) ?? 0;
+                          final trimestre =
+                              int.tryParse(_trimestreController.text) ?? 1;
+
+                          final result = await _financeController
+                              .enregistrerPret(
+                                montant: montant,
+                                trimestre: trimestre,
+                                montantTotal: totalAmount,
+                                modePaiement: _modePaiementController.text,
+                                contact: _contactController.text,
+                              );
+
+                          Navigator.of(context).pop();
+
+                          if (result ?? false) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Demande de Prêt envoyé avec succès!',
+                                ),
+                              ),
+                            );
+                            _montantController.clear();
+                            _trimestreController.clear();
+                            _modePaiementController.clear();
+                            _contactController.clear();
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Échec de l\'enregistrement'),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Erreur: ${e.toString()}')),
+                          );
+                        }
                       },
                       child: Text("Soumettre le prêt"),
                       style: ElevatedButton.styleFrom(
@@ -695,6 +562,10 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                           horizontal: 40,
                           vertical: 12,
                         ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        elevation: 3,
                       ),
                     ),
                     SizedBox(height: 20),
@@ -733,25 +604,10 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
 // Modèles
 // ---------------------
 
-class Loan {
-  final int amount;
-  final DateTime date;
-  bool isRepaid;
-
-  Loan({required this.amount, required this.date, this.isRepaid = false});
-}
-
-class Repayment {
-  final String mutual;
-  final int amount;
-  final DateTime date;
-
-  Repayment({required this.mutual, required this.amount, required this.date});
-}
-
 final List<PaymentMethod> paymentMethods = [
-  PaymentMethod(id: 1, label: 'MTN CI', image: 'images/mtn.jpg'),
+  // PaymentMethod(id: 1, label: 'MTN CI', image: 'images/mtn.jpg'),
   PaymentMethod(id: 2, label: 'ORANGE CI', image: 'images/orange.jpg'),
   PaymentMethod(id: 3, label: 'WAVE', image: 'images/wave.jpg'),
   PaymentMethod(id: 4, label: 'CASH', image: 'images/cash.png'),
+  // PaymentMethod(id: 5, label: 'MOOV CI', image: 'images/moov.png'),
 ];

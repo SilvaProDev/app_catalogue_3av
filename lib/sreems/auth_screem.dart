@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 
 import 'login_screen.dart';
 import 'signup_screen.dart';
@@ -21,17 +22,20 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: Duration(milliseconds: 500),
-      child: showLogin
-          ? LoginScreen(
-              key: ValueKey('login'),
-               onLoginTap: () {  },
-            )
-          : SignupScreen(
-              key: ValueKey('signup'),
-              onLoginTap: toggleAuth,
-            ),
+     
+    return Scaffold(
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        child: showLogin
+            ? LoginScreen(
+                key: const ValueKey('login'),
+                onLoginTap: (){},
+              )
+            : SignupScreen(
+                key: const ValueKey('signup'),
+                onLoginTap: toggleAuth,
+              ),
+      ),
     );
   }
 }

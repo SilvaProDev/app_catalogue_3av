@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../controllers/auth_controller.dart';
 
 class SuiviPretPage extends StatelessWidget {
   final int etapeActuelle; // Étape en cours : 0 à 4
-
-  const SuiviPretPage({super.key, required this.etapeActuelle});
+ final AuthentificationController _authentificationController =
+      Get.put(AuthentificationController());
+   SuiviPretPage({super.key, required this.etapeActuelle});
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +39,7 @@ class SuiviPretPage extends StatelessWidget {
 }
 
 class VerticalLoanStepper extends StatelessWidget {
+  
   final int currentStep;
 
   const VerticalLoanStepper({super.key, required this.currentStep});
@@ -43,9 +48,9 @@ class VerticalLoanStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     final steps = [
       {'title': 'Président', 'date': '15/06/2025', 'icon': Icons.gavel},
-      {'title': 'Caissière', 'date': '01/07/2025', 'icon': Icons.verified_user},
-      {'title': 'Adhérent approuve', 'date': '0', 'icon': Icons.person},
-      {'title': 'Caissière décaisse', 'date': '0', 'icon': Icons.attach_money},
+      // {'title': 'Trésorière', 'date': '01/07/2025', 'icon': Icons.verified_user},
+      {'title': 'Kouassi', 'date': '01/07/2025', 'icon': Icons.person},
+      {'title': 'Décaissement', 'date': '0', 'icon': Icons.attach_money},
     ];
 
     return Column(

@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../constants/constants.dart';
+import '../controllers/auth_controller.dart';
 
 class MyProfileScreen extends StatelessWidget {
-  const MyProfileScreen({Key? key}) : super(key: key);
+ // const MyProfileScreen({Key? key}) : super(key: key);
   static String routeName = 'MyProfileScreen';
-
+final AuthentificationController _authentificationController =
+      Get.put(AuthentificationController());
   @override
   Widget build(BuildContext context) {
     final bool isTablet = MediaQuery.of(context).size.shortestSide >= 600;
@@ -30,27 +33,63 @@ class MyProfileScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
-                      radius: isTablet ? 48 : 52,
-                      backgroundColor: kSecondaryColor,
-                      backgroundImage: const AssetImage('images/doctor1.jpg'),
-                    ),
+                     Container(
+                                      width: 90,
+                                      height: 90,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 6,
+                                            offset: Offset(0, 3),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipOval(
+                                        child: Image.network(
+                                          '$imageUrl/${_authentificationController.user.value?.image}',
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (
+                                            context,
+                                            error,
+                                            stackTrace,
+                                          ) {
+                                            return Image.asset(
+                                              'images/avatar1.jpg',
+                                              fit: BoxFit.cover,
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                     
+                  //  CircleAvatar(
+                  //             radius: isTablet ? 60 : 50,
+                  //             backgroundImage:
+                  //                 (_authentificationController.user.value?.image !=null 
+                  //                 && _authentificationController.user.value!.image!.isNotEmpty)
+                  //                 ? NetworkImage(
+                  //                   '${imageUrl}/${_authentificationController.user.value!.image!}',)
+                  //                         as ImageProvider
+                  //                 : const AssetImage("images/doctor1.jpg"),
+                  //           ),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Ouattara DAOUDA',
+                        Text( _authentificationController
+                                            .user.value?.nom ?? 'Non défini',
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
                         ),
-                        Text(
-                          'Informaticien',
-                          style: TextStyle(color: Colors.white),
+                        Text( _authentificationController
+                                            .user.value?.prenom ?? 'Non défini',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ],
                     ),
@@ -75,13 +114,13 @@ class MyProfileScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             ProfileDetailRow(
-              title: 'Référence 3AV',
-              value: '2025-OD-09-05',
-              isTablet: isTablet,
-            ),
-            ProfileDetailRow(
               title: 'Exercice budgétaire',
               value: '2025',
+              isTablet: isTablet,
+            ),
+             ProfileDetailRow(
+              title: 'Date d\'adhésion',
+              value: '01/01/2025',
               isTablet: isTablet,
             ),
           ],
@@ -91,31 +130,19 @@ class MyProfileScreen extends StatelessWidget {
           children: [
             ProfileDetailRow(
               title: 'Fonction',
-              value: 'Informaticien',
+              value:  _authentificationController
+                                            .user.value?.fonction ?? 'Non défini',
               isTablet: isTablet,
             ),
             ProfileDetailRow(
               title: 'Emploi',
-              value: 'Développeur',
+              value:  _authentificationController
+                                            .user.value?.emploi ?? 'Non défini',
               isTablet: isTablet,
             ),
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            ProfileDetailRow(
-              title: 'Date d\'adhésion',
-              value: '01/01/2025',
-              isTablet: isTablet,
-            ),
-            ProfileDetailRow(
-              title: 'Anniversaire',
-              value: '09/10/2021',
-              isTablet: isTablet,
-            ),
-          ],
-        ),
+       
       ],
     );
   }
@@ -125,12 +152,14 @@ class MyProfileScreen extends StatelessWidget {
       children: [
         ProfileDetailColumn(
           title: 'Email',
-          value: 'ouattara.daouda4613@gmail.com',
+          value:  _authentificationController
+                                            .user.value?.email ?? 'Non défini',
           isTablet: isTablet,
         ),
         ProfileDetailColumn(
           title: 'Nom et Prenom',
-          value: 'Ouattara  Daouda',
+          value: "${ _authentificationController.user.value?.nom as String } "" ${ _authentificationController
+                                            .user.value?.prenom as String}",
           isTablet: isTablet,
         ),
         ProfileDetailColumn(
@@ -140,7 +169,8 @@ class MyProfileScreen extends StatelessWidget {
         ),
         ProfileDetailColumn(
           title: 'Numéro',
-          value: '0546134701/0707164602',
+          value: _authentificationController
+                                            .user.value?.telephone ?? 'Non défini',
           isTablet: isTablet,
         ),
       ],
@@ -178,9 +208,9 @@ class ProfileDetailRow extends StatelessWidget {
                   fontSize: isTablet ? 14 : 16,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 10),
               Text(value, style: Theme.of(context).textTheme.bodySmall),
-              const SizedBox(height: 4),
+              const SizedBox(height: 10),
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.35,
                 child: const Divider(thickness: 1.0),
@@ -224,9 +254,9 @@ class ProfileDetailColumn extends StatelessWidget {
                   fontSize: 20,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Text(value, style: TextStyle(fontSize: 14)),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.9,
                 child: const Divider(thickness: 1.0),

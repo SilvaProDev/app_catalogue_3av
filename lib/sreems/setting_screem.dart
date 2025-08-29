@@ -1,8 +1,14 @@
 import 'package:catalogue_3av/pages/finances.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../constants/constants.dart';
+import '../controllers/auth_controller.dart';
 import '../pages/demande_pret.dart';
+import '../pages/edit_password.dart';
+import '../pages/edit_profile_screen.dart';
+import '../pages/prestation.dart';
 import '../pages/profil_page.dart';
 import '../pages/suivi_de_pret.dart';
 import 'dashbord_screem.dart';
@@ -10,9 +16,16 @@ import 'login_screen.dart';
 import 'messages_screem.dart';
 import 'signup_screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+      final AuthentificationController _authentificationController =
+      Get.put(AuthentificationController());
   @override
   Widget build(BuildContext context) {
     // Styles de texte réutilisables
@@ -60,12 +73,18 @@ class SettingsScreen extends StatelessWidget {
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading: const CircleAvatar(
+                        leading:  CircleAvatar(
                           radius: 30,
-                          backgroundImage: AssetImage("images/doctor1.jpg"),
+                          backgroundImage: (_authentificationController.user.value?.image != null &&
+                                  _authentificationController.user.value!.image!.isNotEmpty)
+                              ? NetworkImage('${imageUrl}/${_authentificationController.user.value!.image!}')
+                                  as ImageProvider
+                              : const AssetImage("images/doctor1.jpg"),
+                       
                         ),
                         title: Text(
-                          "OUATTARA DAOUDA",
+                          _authentificationController
+                                            .user.value?.nom as String,
                           style: profileNameStyle,
                         ),
                         subtitle: Text(
@@ -99,22 +118,22 @@ class SettingsScreen extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => MyProfileScreen()),
+                                    builder: (context) => EditProfileScreen()),
                               );
                             },
                           ),
-                          _buildProfileAction(
-                            icon: Icons.message,
-                            label: "Messages",
-                            color: Colors.green,
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => MessageScreem()),
-                              );
-                            },
-                          ),
+                          // _buildProfileAction(
+                          //   icon: Icons.message,
+                          //   label: "Messages",
+                          //   color: Colors.green,
+                          //   onTap: () {
+                          //     Navigator.push(
+                          //       context,
+                          //       MaterialPageRoute(
+                          //           builder: (context) => MessageScreem()),
+                          //     );
+                          //   },
+                          // ),
                         ],
                       ),
                     ],
@@ -142,41 +161,54 @@ class SettingsScreen extends StatelessWidget {
                   children: [
                     _buildSettingTile(
                       context,
-                      icon: Icons.dashboard,
-                      title: "Tableau de bord",
+                      icon: Icons.edit,
+                      title: "Modifier mot de passe",
                       color: Colors.deepPurple,
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => DashboardScreen()),
+                              builder: (context) => ChangePasswordPage()),
                         );
                       },
                     ),
+                    // _buildSettingTile(
+                    //   context,
+                    //   icon: Icons.dashboard,
+                    //   title: "Tableau de bord",
+                    //   color: Colors.deepPurple,
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //           builder: (context) => DashboardScreen()),
+                    //     );
+                    //   },
+                    // ),
                     _buildDivider(),
-                    _buildSettingTile(
-                      context,
-                      icon: Icons.trending_up,
-                      title: "Finances",
-                      color: Colors.indigo,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => MemberLoansScreen()),
-                        );
-                      },
-                    ),
+                    // _buildSettingTile(
+                    //   context,
+                    //   icon: Icons.trending_up,
+                    //   title: "Finances",
+                    //   color: Colors.indigo,
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //           builder: (context) => MemberLoansScreen()),
+                    //     );
+                    //   },
+                    // ),
                     _buildSettingTile(
                       context,
                       icon: Icons.account_balance_wallet,
-                      title: "Liste des prêts",
+                      title: "Prestations",
                       color: Colors.indigo,
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => LoanListPage()),
+                              builder: (context) => PrestationsScreen()),
                         );
                       },
                     ),
@@ -194,20 +226,20 @@ class SettingsScreen extends StatelessWidget {
                       },
                     ),
                     _buildDivider(),
-                    _buildSettingTile(
-                      context,
-                      icon: Icons.person_add,
-                      title: "Enregistrer un membre",
-                      color: Colors.orange,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SignupScreen(onLoginTap: () {}),
-                          ),
-                        );
-                      },
-                    ),
+                    // _buildSettingTile(
+                    //   context,
+                    //   icon: Icons.person_add,
+                    //   title: "Enregistrer un membre",
+                    //   color: Colors.orange,
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => SignupScreen(onLoginTap: () {}),
+                    //       ),
+                    //     );
+                    //   },
+                    // ),
                   ],
                 ),
               ),
@@ -230,13 +262,13 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _buildSettingTile(
-                      context,
-                      icon: Icons.settings,
-                      title: "Paramètres du compte",
-                      color: Colors.grey,
-                      onTap: () {},
-                    ),
+                    // _buildSettingTile(
+                    //   context,
+                    //   icon: Icons.settings,
+                    //   title: "Paramètres du compte",
+                    //   color: Colors.grey,
+                    //   onTap: () {},
+                    // ),
                     _buildDivider(),
                     _buildSettingTile(
                       context,
@@ -251,14 +283,9 @@ class SettingsScreen extends StatelessWidget {
                       icon: Icons.logout,
                       title: "Déconnexion",
                       color: Colors.redAccent,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => LoginScreen(onLoginTap: () {}),
-                          ),
-                        );
-                      },
+                       onTap: () async {
+                   await _authentificationController.logout();
+                  },
                     ),
                   ],
                 ),
