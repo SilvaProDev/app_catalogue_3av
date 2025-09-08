@@ -32,14 +32,17 @@ class _CfCentralState extends State<CfCentral> {
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Obx(() {
         // Filtrer la liste par localite
-        final filteredCFs =
+       final filteredCFs =
             _authController.listeService
                 .where(
                   (cf) =>
                       cf.localite == widget.localite &&
-                      cf.libelle.toLowerCase().contains(
-                        widget.searchTerm.toLowerCase(),
-                      ),
+                      (cf.libelle.toLowerCase().contains(
+                            widget.searchTerm.toLowerCase(),
+                          ) ||
+                          cf.structureController!.toLowerCase().contains(
+                            widget.searchTerm.toLowerCase(),
+                          )),
                 )
                 .toList();
 

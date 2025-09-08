@@ -51,9 +51,9 @@ const String mobilePattern = r'(^(?:[+0]9)?[0-9]{10,12}$)';
 const String emailPattern =
     r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
 
-//  String url = 'http://192.168.11.1:8000/api';
-//  String imageUrl = 'http://192.168.11.1:8000';
+ String url = 'http://192.168.11.1:8000/api';
+ String imageUrl = 'http://192.168.11.1:8000';
 
 //En prode
-String url = 'https://amical3av.com/backend3av/public/api';
-String imageUrl = 'https://amical3av.com/backend3av/public';
+// String url = 'https://amical3av.com/backend3av/public/api';
+// String imageUrl = 'https://amical3av.com/backend3av/public';

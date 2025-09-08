@@ -72,7 +72,7 @@ class _ServiceScreemState extends State<ServiceScreem> {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Rechercher par nom ou prénom...',
+                  hintText: 'Rechercher par nom ou Structure...',
                   prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),

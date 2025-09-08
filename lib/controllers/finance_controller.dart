@@ -14,7 +14,7 @@ import '../constants/constants.dart';
 import '../model/Remboursement.dart';
 import '../model/carousel_slider.dart';
 import '../model/pret.dart';
-import '../model/role.dart';
+import '../model/suivi_pret.dart';
 import '../model/type_prestation.dart';
 import 'auth_controller.dart';
 
@@ -31,7 +31,7 @@ class FinanceController extends GetxController {
   final RxList<Fonction> fonctions = <Fonction>[].obs;
   final RxList<Grade> grades = <Grade>[].obs;
   final RxList<Emploi> emplois = <Emploi>[].obs;
-  // final RxList<Role> roles = <Role>[].obs;
+  final RxList<SuiviPret> suiviPrets = <SuiviPret>[].obs;
 
   Future<bool> enregistrerPret({
     required double montant,
@@ -139,6 +139,73 @@ class FinanceController extends GetxController {
     return false; // si on passe ici, c’est un échec
   }
 
+  Future<bool> validerPaiement(int idPret) async {
+    print(idPret);
+    try {
+      final response = await http.put(
+        Uri.parse('$url/vise_adherent/${idPret}'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${_authController.token}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        getListePret();
+        Get.snackbar(
+          "Succès",
+          "Paiement validé avec succes merci de contacter la trésorière",
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+        );
+        return true;
+      } else {
+        Get.snackbar(
+          "Erreur",
+          "Échec de paiement : ${response.statusCode}",
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return false;
+      }
+    } catch (e) {
+      print('Erreur: $e');
+      return false;
+    }
+  }
+
+  Future<bool> getListeSuiviPret() async {
+    isLoading.value = true;
+    try {
+      final response = await http.get(
+        Uri.parse('$url/suivi_pret'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer ${_authController.token}',
+        },
+      );
+      if (response.statusCode == 200) {
+        final decoded = json.decode(response.body);
+        if (decoded is List) {
+          suiviPrets.value = decoded.map((e) => SuiviPret.fromJson(e)).toList();
+          return true;
+        } else {
+          suiviPrets.value = [];
+          debugPrint('Erreur: réponse non liste: $decoded');
+        }
+      } else {
+        debugPrint(
+          'Erreur API: status ${response.statusCode}, body: ${response.body}',
+        );
+      }
+    } catch (e, stacktrace) {
+      debugPrint('Exception dans getListeRemboursement: $e\n$stacktrace');
+    } finally {
+      isLoading.value = false;
+    }
+    return false;
+  }
+
   Future<bool> getListeRemboursement() async {
     isLoading.value = true;
     try {
@@ -156,7 +223,6 @@ class FinanceController extends GetxController {
               decoded.map((e) => Remboursement.fromJson(e)).toList();
           return true;
         } else {
-          print("test silva");
           remboursements.value = [];
           debugPrint('Erreur: réponse non liste: $decoded');
         }

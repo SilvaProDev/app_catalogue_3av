@@ -221,7 +221,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => SuiviPretPage(etapeActuelle: 2,)),
+                              builder: (context) => SuiviPretsPage()),
                         );
                       },
                     ),
