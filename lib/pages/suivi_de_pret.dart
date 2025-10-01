@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../controllers/finance_controller.dart';
+import '../model/suivi_pret.dart';
 
 class SuiviPretsPage extends StatefulWidget {
   const SuiviPretsPage({super.key});
@@ -21,26 +22,18 @@ class _SuiviPretsPageState extends State<SuiviPretsPage> {
 
   String _formatDate(DateTime? date) {
     if (date == null) return "En attente";
-    return "${date.day}/${date.month}/${date.year}";
+    final d = date.day.toString().padLeft(2, '0');
+    final m = date.month.toString().padLeft(2, '0');
+    final y = date.year.toString();
+    return "$d/$m/$y";
   }
 
-  /// Retourne le statut basé sur les dates
-  String getStepStatusByDate(
-    DateTime? date,
-    DateTime? prevDate,
-    DateTime? nextDate,
-  ) {
-    if (date != null) return "validé";
-    if (prevDate != null && nextDate != null) return "en cours";
-    if (prevDate != null && nextDate == null) return "en cours";
-    if (prevDate == null) return "en attente";
-    return "en attente";
-  }
-final formatMontant = NumberFormat.currency(
-    locale: 'fr_FR', // pour le format français
-    symbol: 'FCFA', // ou '$', '€', etc.
-    decimalDigits: 0, // pas de décimales
+  final formatMontant = NumberFormat.currency(
+    locale: 'fr_FR',
+    symbol: 'FCFA',
+    decimalDigits: 0,
   );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -63,16 +56,21 @@ final formatMontant = NumberFormat.currency(
           padding: const EdgeInsets.all(12),
           itemCount: controller.suiviPrets.length,
           itemBuilder: (context, index) {
-            final pret = controller.suiviPrets[index];
-            final steps = [
-              {"label": "Président", "date": pret.datePresident},
-              {"label": "Trésorière", "date": pret.dateTresorie},
-              {"label": "Adhérent", "date": pret.dateAdherent},
-              {"label": "Paiement", "date": pret.datePaiement},
+            final SuiviPret pret = controller.suiviPrets[index];
+
+            // On garde ici 3 étapes (Président, Trésorière, Paiement) comme dans ton UI
+            final List<String> labels = ['Président', 'Trésorière', 'Paiement'];
+            final List<DateTime?> dates = [
+              pret.datePresident,
+              pret.dateTresorie,
+              pret.datePaiement,
             ];
 
-            // Trouver la première étape non remplie pour l'afficher "En cours"
-            int firstNullIndex = steps.indexWhere((s) => s["date"] == null);
+            // index de la première étape non remplie (ou -1 si toutes remplies)
+            int firstNullIndex = dates.indexWhere((d) => d == null);
+            if (firstNullIndex == -1) firstNullIndex = dates.length;
+
+            final bool isRefused = pret.statut == 3;
 
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 10),
@@ -83,55 +81,85 @@ final formatMontant = NumberFormat.currency(
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Text(
-                    //   "Prêt #${pret.id}",
-                    //   style: const TextStyle(
-                    //     fontWeight: FontWeight.bold,
-                    //     fontSize: 16,
-                    //   ),
-                    // ),
-                    const SizedBox(height: 10),
+                    // Ligne statut + montant, et badge REFUSÉ si besoin
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("Statut:"),
-                        SizedBox(width: 6),
-                        Text(
-                          "${pret.statutText}",
-                          style: TextStyle(
-                            color: pret.statutColor,
-                            fontWeight: FontWeight.bold, // optionnel
-                          ),
+                        Row(
+                          children: [
+                            const Text("Statut:"),
+                            const SizedBox(width: 6),
+                            Text(
+                              pret.statutText,
+                              style: TextStyle(
+                                color: pret.statutColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 20),
+                            const Text("Montant:"),
+                            const SizedBox(width: 8),
+                            Text(
+                              formatMontant.format(pret.montant),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(width: 20),
-                          Text("Montant:"),
-                        SizedBox(width: 8),
-                        Text(
-                          formatMontant.format(pret.montant),
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
+                        if (isRefused)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.red),
+                            ),
+                            child: const Text(
+                              "REFUSÉ",
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        )
                       ],
                     ),
+
                     const SizedBox(height: 12),
+
+                    // Timeline des étapes
                     SizedBox(
                       height: 120,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: List.generate(steps.length, (i) {
-                          final step = steps[i];
-                          final date = step["date"] as DateTime?;
+                        children: List.generate(labels.length, (i) {
+                          final date = dates[i];
 
-                          // Déterminer le statut
+                          // Statut calculé selon la règle :
+                          // - Si refusé globalement: président -> "refusé", les autres -> "en attente"
+                          // - Sinon: date != null -> validé, sinon premier null -> en cours, sinon en attente
                           String status;
-                          if (date != null) {
-                            status = "validé";
-                          } else if (i == firstNullIndex) {
-                            status = "en cours";
+                          if (isRefused) {
+                            if (i == 0) {
+                              status = "refusé";
+                            } else {
+                              status = "en attente";
+                            }
                           } else {
-                            status = "en attente";
+                            if (date != null) {
+                              status = "validé";
+                            } else if (i == firstNullIndex) {
+                              status = "en cours";
+                            } else {
+                              status = "en attente";
+                            }
                           }
 
                           Color color;
@@ -145,24 +173,47 @@ final formatMontant = NumberFormat.currency(
                               color = Colors.orange;
                               icon = Icons.play_arrow;
                               break;
+                            case "refusé":
+                              color = Colors.red;
+                              icon = Icons.close;
+                              break;
                             default:
                               color = Colors.grey.shade400;
                               icon = Icons.hourglass_empty;
                           }
 
+                          // Couleur des connectors : verts seulement si pas de refus global ET la partie appropriée est validée
+                          Color leftConnectorColor = Colors.transparent;
+                          if (i != 0) {
+                            final bool prevValidated =
+                                dates[i - 1] != null && !isRefused;
+                            leftConnectorColor =
+                                prevValidated
+                                    ? Colors.green
+                                    : Colors.grey.shade400;
+                          }
+
+                          Color rightConnectorColor = Colors.transparent;
+                          if (i != labels.length - 1) {
+                            final bool thisValidated =
+                                dates[i] != null && !isRefused;
+                            rightConnectorColor =
+                                thisValidated
+                                    ? Colors.green
+                                    : Colors.grey.shade400;
+                          }
+
                           return Expanded(
                             child: Column(
                               children: [
+                                // ligne + cercle
                                 Row(
                                   children: [
                                     if (i != 0)
                                       Expanded(
                                         child: Container(
                                           height: 3,
-                                          color:
-                                              steps[i - 1]["date"] != null
-                                                  ? Colors.green
-                                                  : Colors.grey.shade400,
+                                          color: leftConnectorColor,
                                         ),
                                       ),
                                     CircleAvatar(
@@ -170,40 +221,47 @@ final formatMontant = NumberFormat.currency(
                                       backgroundColor: color,
                                       child: Icon(icon, color: Colors.white),
                                     ),
-                                    if (i != steps.length - 1)
+                                    if (i != labels.length - 1)
                                       Expanded(
                                         child: Container(
                                           height: 3,
-                                          color:
-                                              date != null
-                                                  ? Colors.green
-                                                  : Colors.grey.shade400,
+                                          color: rightConnectorColor,
                                         ),
                                       ),
                                   ],
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  step["label"].toString(),
+                                  labels[i],
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
                                   ),
                                 ),
+                                const SizedBox(height: 4),
+                                // Date / statut text
                                 Text(
                                   status == "validé"
                                       ? _formatDate(date)
+                                      : status == "refusé"
+                                      ? _formatDate(date) // date du refus
                                       : status == "en cours"
                                       ? "En cours"
                                       : "En attente",
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: color,
+                                    color:
+                                        status == "refusé"
+                                            ? Colors.red
+                                            : (status == "en cours"
+                                                ? Colors.orange
+                                                : color),
                                     fontWeight:
                                         status == "en cours"
                                             ? FontWeight.bold
                                             : FontWeight.normal,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ],
                             ),

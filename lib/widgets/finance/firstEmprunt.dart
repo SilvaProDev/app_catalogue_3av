@@ -131,25 +131,25 @@ final totalAmount = pretList.where((pret) => pret.statut == 2)
                     ),
                   ),
                   // Bouton Valider en dessous du ListTile
-                   if (pret.position == 3)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 50,
-                        right: 16,
-                        bottom: 8,
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () => _onValiderPaiement(pret.id),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
-                        ),
-                        child: Text(
-                          "Valider mon paiement",
-                          style: TextStyle(fontSize: 14, color: Colors.white),
-                        ),
-                      ),
-                    ),
+                  //  if (pret.position == 3)
+                  //   Padding(
+                  //     padding: const EdgeInsets.only(
+                  //       left: 50,
+                  //       right: 16,
+                  //       bottom: 8,
+                  //     ),
+                  //     child: ElevatedButton(
+                  //       onPressed: () => _onValiderPaiement(pret.id),
+                  //       style: ElevatedButton.styleFrom(
+                  //         backgroundColor: Colors.deepPurple,
+                  //         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),
+                  //       ),
+                  //       child: Text(
+                  //         "Valider mon paiement",
+                  //         style: TextStyle(fontSize: 14, color: Colors.white),
+                  //       ),
+                  //     ),
+                  //   ),
                 ],
               ),
             ),

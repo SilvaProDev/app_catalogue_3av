@@ -46,6 +46,7 @@ dependencies:
   flutter_lints: ^5.0.0
   custom_clippers: ^2.0.0
   flutter_chat_bubble: ^2.0.0
+  persistent_bottom_nav_bar: ^6.2.1
   get: ^4.7.2
   http: ^1.4.0
   url_launcher: ^6.1.10

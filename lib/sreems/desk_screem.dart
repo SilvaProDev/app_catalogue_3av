@@ -37,15 +37,15 @@ class OrgChartPage extends StatelessWidget {
       appBar: AppBar(
         centerTitle: true,
         title: const Text('Organigramme Bureau des 3AV',),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => NavBarRoots()),
-            );
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back),
+        //   onPressed: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(builder: (context) => NavBarRoots()),
+        //     );
+        //   },
+        // ),
       ),
       body: InteractiveViewer(
         constrained: false,

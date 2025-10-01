@@ -2,6 +2,7 @@ import 'package:catalogue_3av/pages/finances.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
 import '../constants/constants.dart';
 import '../controllers/auth_controller.dart';
@@ -24,8 +25,9 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-      final AuthentificationController _authentificationController =
-      Get.put(AuthentificationController());
+  final AuthentificationController _authentificationController = Get.put(
+    AuthentificationController(),
+  );
   @override
   Widget build(BuildContext context) {
     // Styles de texte réutilisables
@@ -55,12 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Paramètres",
-                style: titleStyle,
-              ),
+              Text("Paramètres", style: titleStyle),
               const SizedBox(height: 20),
-              
+
               // Section Profil
               Card(
                 elevation: 0,
@@ -73,18 +72,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     children: [
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        leading:  CircleAvatar(
+                        leading: CircleAvatar(
                           radius: 30,
-                          backgroundImage: (_authentificationController.user.value?.image != null &&
-                                  _authentificationController.user.value!.image!.isNotEmpty)
-                              ? NetworkImage('${imageUrl}/${_authentificationController.user.value!.image!}')
-                                  as ImageProvider
-                              : const AssetImage("images/doctor1.jpg"),
-                       
+                          backgroundImage:
+                              (_authentificationController.user.value?.image !=
+                                          null &&
+                                      _authentificationController
+                                          .user
+                                          .value!
+                                          .image!
+                                          .isNotEmpty)
+                                  ? NetworkImage(
+                                        '${imageUrl}/${_authentificationController.user.value!.image!}',
+                                      )
+                                      as ImageProvider
+                                  : const AssetImage("images/doctor1.jpg"),
                         ),
                         title: Text(
-                          _authentificationController
-                                            .user.value?.nom as String,
+                          _authentificationController.user.value?.nom as String,
                           style: profileNameStyle,
                         ),
                         subtitle: Text(
@@ -100,7 +105,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => MyProfileScreen()),
+                              builder: (context) => MyProfileScreen(),
+                            ),
                           );
                         },
                       ),
@@ -118,7 +124,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => EditProfileScreen()),
+                                  builder: (context) => EditProfileScreen(),
+                                ),
                               );
                             },
                           ),
@@ -165,10 +172,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       title: "Modifier mot de passe",
                       color: Colors.deepPurple,
                       onTap: () {
-                        Navigator.push(
+                        PersistentNavBarNavigator.pushNewScreen(
                           context,
-                          MaterialPageRoute(
-                              builder: (context) => ChangePasswordPage()),
+                          screen: ChangePasswordPage(),
+                          withNavBar: true, // 👈 très important
+                          pageTransitionAnimation:
+                              PageTransitionAnimation.cupertino,
                         );
                       },
                     ),
@@ -208,7 +217,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => PrestationsScreen()),
+                            builder: (context) => PrestationsScreen(),
+                          ),
                         );
                       },
                     ),
@@ -221,7 +231,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => SuiviPretsPage()),
+                            builder: (context) => SuiviPretsPage(),
+                          ),
                         );
                       },
                     ),
@@ -283,9 +294,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       icon: Icons.logout,
                       title: "Déconnexion",
                       color: Colors.redAccent,
-                       onTap: () async {
-                   await _authentificationController.logout();
-                  },
+                      onTap: () async {
+                        await _authentificationController.logout();
+                      },
                     ),
                   ],
                 ),
@@ -326,10 +337,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 5),
           Text(
             label,
-            style: GoogleFonts.roboto(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: GoogleFonts.roboto(fontSize: 14, color: Colors.grey[600]),
           ),
         ],
       ),

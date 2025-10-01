@@ -23,10 +23,10 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    // });
-    _financeController.getListePret();
-    _financeController.getListeRemboursement();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _financeController.getListePret();
+      _financeController.getListeRemboursement();
+    });
   }
 
   @override
@@ -34,15 +34,15 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => NavBarRoots()),
-            );
-          },
-        ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.white),
+        //   onPressed: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(builder: (context) => NavBarRoots()),
+        //     );
+        //   },
+        // ),
         centerTitle: true,
         title: Text('Mes Finances', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.deepPurple,
@@ -197,7 +197,8 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
       if (selectedPayment == 'MOOV CI') return '01';
       return null;
     }
-  final List<int> trimestres = [1, 2]; // ou n'importe quels nombres
+
+    final List<int> trimestres = [1, 2]; // ou n'importe quels nombres
 
     @override
     void dispose() {
@@ -504,14 +505,6 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                         }
 
                         try {
-                          showDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            builder:
-                                (context) =>
-                                    Center(child: CircularProgressIndicator()),
-                          );
-
                           final montant =
                               double.tryParse(_montantController.text) ?? 0;
                           final trimestre =
@@ -526,39 +519,61 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                                 contact: _contactController.text,
                               );
 
-                          Navigator.of(context).pop();
+                          if (result) {
+                            Navigator.of(
+                              context,
+                            ).pop(); // ✅ ferme le showDialog
 
-                          if (result ?? false) {
+                            // ✅ rafraîchir la liste des prêts
+                            await _financeController.getListePret();
+
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 content: Text(
-                                  'Demande de Prêt envoyé avec succès!',
+                                  'Demande de Prêt envoyée avec succès!',
                                 ),
                               ),
                             );
+
                             _montantController.clear();
                             _trimestreController.clear();
                             _modePaiementController.clear();
                             _contactController.clear();
                           } else {
+                            Navigator.of(
+                              context,
+                            ).pop(); // ✅ ferme le showDialog même en cas d'échec
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
+                              const SnackBar(
                                 content: Text('Échec de l\'enregistrement'),
                               ),
                             );
                           }
                         } catch (e) {
-                          Navigator.of(context).pop();
+                          Navigator.of(
+                            context,
+                          ).pop(); // ✅ ferme le showDialog en cas d'erreur
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Erreur: ${e.toString()}')),
                           );
                         }
                       },
-                      child: Text("Soumettre le prêt"),
+                      child:
+                          _financeController.isLoading.value
+                              ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                              : const Text("Soumettre le prêt"),
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.deepPurple,
                         foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                           horizontal: 40,
                           vertical: 12,
                         ),
@@ -568,6 +583,7 @@ class _MemberLoansScreenState extends State<MemberLoansScreen>
                         elevation: 3,
                       ),
                     ),
+
                     SizedBox(height: 20),
                   ],
                 ),
